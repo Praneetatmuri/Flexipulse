@@ -1,5 +1,7 @@
 package com.example.demo.service;
 
+import com.example.demo.entity.DietPlanHistory;
+import com.example.demo.repository.DietPlanHistoryRepository;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -27,6 +29,7 @@ import java.util.Map;
 @Service
 public class NutritionService {
 
+    private final DietPlanHistoryRepository dietPlanHistoryRepository;
     private final RestTemplate restTemplate;
     private final String apiKey;
     private final String modelName;
@@ -40,9 +43,11 @@ public class NutritionService {
      * @param modelName The model to use (e.g., "gemini-pro")
      */
     public NutritionService(
+            DietPlanHistoryRepository dietPlanHistoryRepository,
             @Value("${gemini.api.key:}") String apiKey,
             @Value("${gemini.model.name:gemini-pro}") String modelName) {
 
+        this.dietPlanHistoryRepository = dietPlanHistoryRepository;
         this.apiKey = apiKey;
         this.modelName = modelName;
         this.apiKeyConfigured = apiKey != null && !apiKey.isEmpty();
@@ -96,6 +101,7 @@ public class NutritionService {
             response.put("generatedAt", System.currentTimeMillis());
             response.put("source", "fallback-no-api-key");
             response.put("message", "Generated fallback plan. Configure GEMINI_API_KEY later for AI output.");
+            saveDietPlanHistory(userId, workoutCategory, fallback, String.valueOf(response.get("source")), (Long) response.get("generatedAt"));
             return response;
         }
 
@@ -111,6 +117,8 @@ public class NutritionService {
             response.put("workoutCategory", workoutCategory);
             response.put("dietPlan", dietPlan);
             response.put("generatedAt", System.currentTimeMillis());
+            response.put("source", "gemini");
+            saveDietPlanHistory(userId, workoutCategory, dietPlan, String.valueOf(response.get("source")), (Long) response.get("generatedAt"));
 
         } catch (RestClientException e) {
             if (shouldUseFallbackForApiError(e)) {
@@ -125,6 +133,7 @@ public class NutritionService {
                 response.put("generatedAt", System.currentTimeMillis());
                 response.put("source", "fallback-api-quota");
                 response.put("message", "Gemini quota/rate limit hit. Returned fallback plan.");
+                saveDietPlanHistory(userId, workoutCategory, fallback, String.valueOf(response.get("source")), (Long) response.get("generatedAt"));
                 return response;
             }
 
@@ -138,6 +147,10 @@ public class NutritionService {
         }
 
         return response;
+    }
+
+    public List<DietPlanHistory> getRecentDietPlanHistory(Long userId) {
+        return dietPlanHistoryRepository.findTop10ByUserIdOrderByGeneratedAtDesc(userId);
     }
 
     /**
@@ -475,5 +488,19 @@ public class NutritionService {
             || lower.contains("quota")
             || lower.contains("rate limit")
             || lower.contains("resource_exhausted");
+    }
+
+    private void saveDietPlanHistory(Long userId, String workoutCategory, String dietPlan, String source, Long generatedAt) {
+        try {
+            DietPlanHistory history = new DietPlanHistory();
+            history.setUserId(userId);
+            history.setWorkoutCategory(workoutCategory);
+            history.setDietPlan(dietPlan);
+            history.setSource(source);
+            history.setGeneratedAt(generatedAt != null ? generatedAt : System.currentTimeMillis());
+            dietPlanHistoryRepository.save(history);
+        } catch (Exception ignored) {
+            // History persistence should never break main diet generation flow.
+        }
     }
 }

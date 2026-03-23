@@ -71,9 +71,9 @@ function App() {
         toastOptions={{
           duration: 2600,
           style: {
-            background: 'rgba(24,16,11,0.92)',
-            color: '#ffe5cd',
-            border: '1px solid rgba(255,157,78,0.4)',
+            background: 'rgba(9,12,17,0.94)',
+            color: '#f0f5ff',
+            border: '1px solid rgba(255,255,255,0.14)',
           },
         }}
       />

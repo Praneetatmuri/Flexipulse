@@ -27,7 +27,7 @@ export default function Navigation({ currentUser, onLogout }) {
         <div className="flex items-center justify-between gap-4 py-4">
           <Link to={role === 'TRAINER' ? '/trainer/members' : '/'} className="brand-title">
             FlexiPulse
-            <span className="brand-subtitle">fit intelligence</span>
+            <span className="brand-subtitle">train eat recover</span>
           </Link>
           <button
             type="button"

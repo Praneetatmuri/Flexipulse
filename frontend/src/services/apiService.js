@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:8081';
+const API_BASE_URL = 'http://localhost:8080';
 
 const TOKEN_KEY = 'flexiToken';
 
@@ -88,6 +88,7 @@ export const trainerApi = {
 export const nutritionApi = {
   generateDietPlan: (payload) => LongTimeoutApiService.post('/nutrition/diet-plan', payload),
   getApiStatus: () => ApiService.get('/nutrition/api-status'),
+  getDietHistory: (userId) => ApiService.get(`/nutrition/diet-plan/history/${userId}`),
 };
 
 export default ApiService;

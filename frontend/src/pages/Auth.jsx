@@ -89,82 +89,105 @@ export default function Auth({ onAuthSuccess }) {
 
   return (
     <div className="auth-shell">
-      <div className="auth-orb auth-orb-left" />
-      <div className="auth-orb auth-orb-right" />
+      <div className="auth-hero-bg" />
+      <div className="auth-hero-overlay" />
+      <span className="hero-wave hero-wave-cyan auth-wave-cyan" aria-hidden="true" />
+      <span className="hero-wave hero-wave-magenta auth-wave-magenta" aria-hidden="true" />
+      <span className="hero-wave hero-wave-yellow auth-wave-yellow" aria-hidden="true" />
 
-      <div className="auth-card fade-up">
-        <p className="eyebrow">FLEXIPULSE ACCESS</p>
-        <h1 className="auth-title">Orange Core Performance</h1>
-        <p className="auth-subtitle">Choose your portal and continue into the platform.</p>
+      <div className="auth-grid fade-up">
+        <section className="auth-copy">
+          <p className="eyebrow">WE ARE FLEX</p>
+          <h1 className="auth-hero-title">
+            CULT-STYLE
+            <br />
+            FITNESS EXPERIENCE
+          </h1>
+          <p className="auth-hero-subtitle">
+            Train smarter. Eat better. Recover faster. Your complete fitness stack starts here.
+          </p>
 
-        <div className="mode-toggle" role="tablist" aria-label="Auth mode">
-          <button
-            type="button"
-            className={mode === 'login' ? 'toggle-btn toggle-btn-active' : 'toggle-btn'}
-            onClick={() => setMode('login')}
-          >
-            Login
-          </button>
-          <button
-            type="button"
-            className={mode === 'register' ? 'toggle-btn toggle-btn-active' : 'toggle-btn'}
-            onClick={() => setMode('register')}
-          >
-            Register
-          </button>
-        </div>
+          <div className="auth-copy-chips">
+            <span className="streak-chip">Fitness</span>
+            <span className="streak-chip">Sports</span>
+            <span className="streak-chip">AI Nutrition</span>
+          </div>
+        </section>
 
-        <div className="role-grid">
-          {roleOptions.map((item) => (
+        <div className="auth-card auth-card-glass">
+          <p className="eyebrow">FLEXIPULSE ACCESS</p>
+          <h2 className="auth-title">Enter Your Portal</h2>
+          <p className="auth-subtitle">Choose your role and continue.</p>
+
+          <div className="mode-toggle" role="tablist" aria-label="Auth mode">
             <button
               type="button"
-              key={item.value}
-              className={role === item.value ? 'role-card role-card-active' : 'role-card'}
-              onClick={() => setRole(item.value)}
+              className={mode === 'login' ? 'toggle-btn toggle-btn-active' : 'toggle-btn'}
+              onClick={() => setMode('login')}
             >
-              <span className="role-card-title">{item.title}</span>
-              <span className="role-card-caption">{item.caption}</span>
+              Login
             </button>
-          ))}
-        </div>
+            <button
+              type="button"
+              className={mode === 'register' ? 'toggle-btn toggle-btn-active' : 'toggle-btn'}
+              onClick={() => setMode('register')}
+            >
+              Register
+            </button>
+          </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {mode === 'register' && (
+          <div className="role-grid">
+            {roleOptions.map((item) => (
+              <button
+                type="button"
+                key={item.value}
+                className={role === item.value ? 'role-card role-card-active' : 'role-card'}
+                onClick={() => setRole(item.value)}
+              >
+                <span className="role-card-title">{item.title}</span>
+                <span className="role-card-caption">{item.caption}</span>
+              </button>
+            ))}
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {mode === 'register' && (
+              <input
+                className="neo-input"
+                placeholder="Full name"
+                value={name}
+                onChange={(event) => setName(event.target.value)}
+                required
+              />
+            )}
+
             <input
               className="neo-input"
-              placeholder="Full name"
-              value={name}
-              onChange={(event) => setName(event.target.value)}
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
               required
             />
-          )}
+            {emailError && <p className="field-error">{emailError}</p>}
 
-          <input
-            className="neo-input"
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            required
-          />
-          {emailError && <p className="field-error">{emailError}</p>}
+            <input
+              className="neo-input"
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              required
+            />
+            {passwordError && <p className="field-error">{passwordError}</p>}
 
-          <input
-            className="neo-input"
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            required
-          />
-          {passwordError && <p className="field-error">{passwordError}</p>}
+            {message && <p className="form-error">{message}</p>}
 
-          {message && <p className="form-error">{message}</p>}
-
-          <button type="submit" disabled={loading} className="primary-cta w-full">
-            {loading ? 'Please wait...' : submitLabel}
-          </button>
-        </form>
+            <button type="submit" disabled={loading} className="primary-cta w-full">
+              {loading ? 'Please wait...' : submitLabel}
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   );

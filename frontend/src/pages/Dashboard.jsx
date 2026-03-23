@@ -112,11 +112,43 @@ export default function Dashboard({ currentUser }) {
   return (
     <div className="page-shell">
       <div className="max-w-6xl mx-auto px-4 py-10 space-y-8">
-        <div className="fade-up">
-          <p className="eyebrow">MEMBER DASHBOARD</p>
-          <h1 className="page-title">Health Command Center</h1>
-          <p className="page-subtitle">Welcome back, {currentUser?.name || 'athlete'}.</p>
-          <div className="streak-chip mt-3">🔥 Workout streak: {streak} week{streak === 1 ? '' : 's'}</div>
+        <div className="hero-stage fade-up">
+          <div className="hero-media" />
+          <div className="hero-overlay" />
+          <span className="hero-wave hero-wave-cyan" aria-hidden="true" />
+          <span className="hero-wave hero-wave-magenta" aria-hidden="true" />
+          <span className="hero-wave hero-wave-yellow" aria-hidden="true" />
+
+          <div className="hero-content">
+            <div className="hero-topline">
+              <p className="hero-menu-item">FITNESS</p>
+              <p className="hero-menu-item">NUTRITION</p>
+              <p className="hero-menu-item">BOOKINGS</p>
+            </div>
+
+            <p className="eyebrow">WELCOME, {currentUser?.name || 'ATHLETE'}</p>
+            <h1 className="hero-title">
+              WE ARE <span>FLEX</span>
+            </h1>
+            <p className="hero-subtitle">A fitness movement worth breaking a sweat for.</p>
+
+            <div className="hero-actions">
+              <Link to="/booking" className="primary-cta inline-flex px-6">Explore FlexPass</Link>
+              <div className="streak-chip">🔥 Streak: {streak} week{streak === 1 ? '' : 's'}</div>
+            </div>
+
+            <div className="hero-qr">
+              <p className="hero-qr-text">Quick gym check-in</p>
+              <div className="hero-qr-box">
+                <QRCodeSVG
+                  value={`flexipulse-hero-checkin:${currentUser?.id || 'unknown'}`}
+                  size={88}
+                  bgColor="transparent"
+                  fgColor="#f4f7ff"
+                />
+              </div>
+            </div>
+          </div>
         </div>
 
         {message && <div className="status-banner">{message}</div>}

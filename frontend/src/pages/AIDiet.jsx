@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { nutritionApi, healthApi } from '../services/apiService';
 import { getApiErrorMessage } from '../services/apiService';
+import toast from 'react-hot-toast';
 
 export default function AIDiet({ currentUser }) {
   const userId = currentUser?.id;
@@ -9,6 +10,9 @@ export default function AIDiet({ currentUser }) {
   const [error, setError] = useState('');
   const [metrics, setMetrics] = useState(null);
   const [apiStatus, setApiStatus] = useState(null);
+  const [history, setHistory] = useState([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [formErrors, setFormErrors] = useState({});
   
   // Additional diet preferences
   const [dietaryRestrictions, setDietaryRestrictions] = useState([]);
@@ -25,6 +29,7 @@ export default function AIDiet({ currentUser }) {
     if (userId) {
       loadMetrics();
       loadApiStatus();
+      loadHistory();
     }
   }, [userId]);
 
@@ -49,6 +54,37 @@ export default function AIDiet({ currentUser }) {
     }
   };
 
+  const loadHistory = async () => {
+    setHistoryLoading(true);
+    try {
+      const response = await nutritionApi.getDietHistory(userId);
+      setHistory(Array.isArray(response.data) ? response.data : []);
+    } catch {
+      setHistory([]);
+    } finally {
+      setHistoryLoading(false);
+    }
+  };
+
+  const validateForm = () => {
+    const nextErrors = {};
+
+    if (age && (Number(age) < 1 || Number(age) > 120)) {
+      nextErrors.age = 'Age must be between 1 and 120.';
+    }
+
+    if (calorieTarget && Number(calorieTarget) <= 0) {
+      nextErrors.calorieTarget = 'Calorie target must be a positive number.';
+    }
+
+    if (!mealsPerDay || Number(mealsPerDay) < 2 || Number(mealsPerDay) > 6) {
+      nextErrors.mealsPerDay = 'Meals per day should be between 2 and 6.';
+    }
+
+    setFormErrors(nextErrors);
+    return Object.keys(nextErrors).length === 0;
+  };
+
   const handleGenerateDiet = async () => {
     setLoading(true);
     setError('');
@@ -57,7 +93,14 @@ export default function AIDiet({ currentUser }) {
     try {
       if (!metrics) {
         setError('Please add your health metrics first!');
+        toast.error('Please add your health metrics first.');
         setLoading(false);
+        return;
+      }
+
+      if (!validateForm()) {
+        setLoading(false);
+        toast.error('Please fix the highlighted form errors.');
         return;
       }
 
@@ -80,8 +123,11 @@ export default function AIDiet({ currentUser }) {
 
       if (response.data.success) {
         setDietPlan(response.data);
+        toast.success('Diet plan generated successfully.');
+        loadHistory();
       } else {
         setError(response.data.message || 'Failed to generate diet plan');
+        toast.error(response.data.message || 'Failed to generate diet plan');
       }
     } catch (err) {
       if (err.response?.status === 401 || err.response?.status === 403) {
@@ -90,10 +136,47 @@ export default function AIDiet({ currentUser }) {
       } else {
         setError(getApiErrorMessage(err, 'Error generating diet plan. Please try again.'));
       }
+      toast.error('Unable to generate diet plan right now.');
       console.error('Error:', err);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleDownloadPdf = () => {
+    if (!dietPlan?.dietPlan) {
+      toast.error('Generate a diet plan before exporting.');
+      return;
+    }
+
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      toast.error('Popup blocked. Please allow popups to export PDF.');
+      return;
+    }
+
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>FlexiPulse Diet Plan</title>
+          <style>
+            body { font-family: Arial, sans-serif; padding: 24px; line-height: 1.5; }
+            h1 { margin-bottom: 8px; }
+            .meta { color: #555; margin-bottom: 20px; }
+            pre { white-space: pre-wrap; word-wrap: break-word; font-size: 13px; }
+          </style>
+        </head>
+        <body>
+          <h1>FlexiPulse Personalized Diet Plan</h1>
+          <div class="meta">Generated: ${new Date(dietPlan.generatedAt || Date.now()).toLocaleString()}</div>
+          <pre>${(dietPlan.dietPlan || '').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+    printWindow.focus();
+    printWindow.print();
+    toast.success('Print dialog opened. Choose Save as PDF to export.');
   };
 
   const parseDietPlan = (planText) => {
@@ -213,7 +296,7 @@ export default function AIDiet({ currentUser }) {
                   </select>
                 </div>
                 <div>
-                  <label className="label-text block mb-2">Age (years)</label>
+                  <label className="label-text block mb-2">Age (years) <span className="text-orange-200/70">(Optional)</span></label>
                   <input
                     type="number"
                     min="1"
@@ -223,6 +306,7 @@ export default function AIDiet({ currentUser }) {
                     onChange={(e) => setAge(e.target.value)}
                     className="input-field w-full"
                   />
+                  {formErrors.age && <p className="text-red-300 text-xs mt-1">{formErrors.age}</p>}
                 </div>
               </div>
             </div>
@@ -306,7 +390,7 @@ export default function AIDiet({ currentUser }) {
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="label-text block mb-2">Meals Per Day</label>
+                    <label className="label-text block mb-2">Meals Per Day <span className="text-orange-200/70">(Required)</span></label>
                     <select
                       value={mealsPerDay}
                       onChange={(e) => setMealsPerDay(e.target.value)}
@@ -318,10 +402,11 @@ export default function AIDiet({ currentUser }) {
                       <option value="5">5 Meals</option>
                       <option value="6">6 Meals</option>
                     </select>
+                    {formErrors.mealsPerDay && <p className="text-red-300 text-xs mt-1">{formErrors.mealsPerDay}</p>}
                   </div>
 
                   <div>
-                    <label className="label-text block mb-2">Daily Calorie Target (Optional)</label>
+                    <label className="label-text block mb-2">Daily Calorie Target <span className="text-orange-200/70">(Optional)</span></label>
                     <input
                       type="number"
                       placeholder="e.g., 2000"
@@ -329,6 +414,7 @@ export default function AIDiet({ currentUser }) {
                       onChange={(e) => setCalorieTarget(e.target.value)}
                       className="input-field w-full"
                     />
+                    {formErrors.calorieTarget && <p className="text-red-300 text-xs mt-1">{formErrors.calorieTarget}</p>}
                   </div>
                 </div>
 
@@ -379,6 +465,12 @@ export default function AIDiet({ currentUser }) {
               <h2 className="section-title mb-4">Your Diet Plan</h2>
               {dietPlan ? (
                 <div className="max-h-screen overflow-y-auto space-y-4">
+                  <button
+                    onClick={handleDownloadPdf}
+                    className="w-full py-2 rounded bg-orange-500/20 border border-orange-400/40 text-orange-100 hover:bg-orange-500/30 transition"
+                  >
+                    Export as PDF
+                  </button>
                   {renderDietPlan(parseDietPlan(dietPlan.dietPlan || ''))}
                 </div>
               ) : (
@@ -387,6 +479,30 @@ export default function AIDiet({ currentUser }) {
                   <p className="text-sm text-gray-300">Fill in your preferences and generate to receive a full weekly recommendation tailored to your goals.</p>
                 </div>
               )}
+
+              <div className="mt-6 border-t border-orange-400/20 pt-4">
+                <h3 className="text-white font-semibold mb-3">Recent Plans</h3>
+                {historyLoading ? (
+                  <p className="text-sm text-orange-100/70">Loading history...</p>
+                ) : history.length === 0 ? (
+                  <p className="text-sm text-orange-100/70">No plans generated yet.</p>
+                ) : (
+                  <div className="space-y-2 max-h-72 overflow-y-auto">
+                    {history.map((item) => (
+                      <button
+                        key={item.id}
+                        onClick={() => setDietPlan({ dietPlan: item.dietPlan, generatedAt: item.generatedAt, source: item.source })}
+                        className="w-full text-left p-3 rounded border border-orange-500/30 bg-black/20 hover:bg-black/35 transition"
+                      >
+                        <p className="text-sm text-white font-medium">{item.workoutCategory || 'Diet Plan'}</p>
+                        <p className="text-xs text-orange-200/70">
+                          {item.generatedAt ? new Date(item.generatedAt).toLocaleString() : 'Unknown date'}
+                        </p>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>

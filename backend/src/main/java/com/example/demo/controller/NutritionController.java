@@ -185,4 +185,15 @@ public class NutritionController {
                 : "Gemini API is not configured. Set GEMINI_API_KEY environment variable."
         ));
     }
+
+    @GetMapping("/diet-plan/history/{userId}")
+    public ResponseEntity<?> getDietPlanHistory(@PathVariable Long userId) {
+        try {
+            return ResponseEntity.ok(nutritionService.getRecentDietPlanHistory(userId));
+        } catch (Exception e) {
+            return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "Failed to load diet history: " + e.getMessage()));
+        }
+    }
 }
