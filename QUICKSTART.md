@@ -12,16 +12,17 @@ Get FlexiPulse up and running in 5 minutes!
 
 ## 🚀 Step 1: Configure API Key
 
-1. Open: `backend/src/main/resources/application.properties`
-2. Find this line:
-   ```properties
-   gemini.api.key=YOUR_GEMINI_API_KEY_HERE
-   ```
-3. Replace with your actual API key:
-   ```properties
-   gemini.api.key=AIza_your_actual_key_here
-   ```
-4. Save the file
+Set your API key as an environment variable (recommended):
+
+```powershell
+$env:GEMINI_API_KEY="your_actual_key_here"
+```
+
+Or (Linux/macOS):
+
+```bash
+export GEMINI_API_KEY=your_actual_key_here
+```
 
 ---
 

@@ -23,16 +23,19 @@ If you don't have a Google account, create one at https://accounts.google.com
 
 ### For Development (Local Testing)
 
-1. Open `backend/src/main/resources/application.properties`
-2. Find this line:
-   ```properties
-   gemini.api.key=YOUR_GEMINI_API_KEY_HERE
-   ```
-3. Replace `YOUR_GEMINI_API_KEY_HERE` with your actual API key:
-   ```properties
-   gemini.api.key=AIza_xxxxxxxxxxxxxxxxxxxxxxxxxxx
-   ```
-4. Save the file and restart the backend
+Set environment variable instead of hardcoding:
+
+```bash
+export GEMINI_API_KEY=your_actual_key_here
+```
+
+On Windows PowerShell:
+
+```powershell
+$env:GEMINI_API_KEY="your_actual_key_here"
+```
+
+Then restart the backend.
 
 ### For Production
 

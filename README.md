@@ -108,10 +108,9 @@ flexipulse/
    ```
 
 2. **Configure Gemini API Key:**
-   - Edit `src/main/resources/application.properties`
-   - Replace `YOUR_GEMINI_API_KEY_HERE` with your actual Gemini API key
-   ```properties
-   gemini.api.key=your_actual_key_here
+   - Set environment variable `GEMINI_API_KEY` before running backend
+   ```powershell
+   $env:GEMINI_API_KEY="your_actual_key_here"
    ```
 
 3. **Build the project:**
