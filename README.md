@@ -1,69 +1,60 @@
 # FlexiPulse
 
-FlexiPulse is a full-stack fitness platform with:
-- JWT-based authentication (Member and Trainer roles)
-- Health metric tracking (BMI and workout category)
-- Appointment booking with trainer leave blocking
-- AI diet plan generation with Gemini
-- Diet plan history and PDF export support in the UI
+AI-Powered Fitness and Wellness Dashboard  
+Built with React (Vite) + Spring Boot + Gemini
 
-## Tech Stack
+[Quickstart](#quickstart) · [Features](#features) · [Architecture](#architecture) · [API](#api-reference) · [Troubleshooting](#troubleshooting)
 
-### Backend
-- Java 17
-- Spring Boot
-- Spring Security + JWT
-- Spring Data JPA
-- H2 in-memory database
-- Maven
+![React](https://img.shields.io/badge/Frontend-React%20%2B%20Vite-61DAFB)
+![Spring Boot](https://img.shields.io/badge/Backend-Spring%20Boot-6DB33F)
+![Java](https://img.shields.io/badge/Java-17-007396)
+![Type](https://img.shields.io/badge/Auth-JWT-orange)
+![AI](https://img.shields.io/badge/AI-Gemini-blue)
 
-### Frontend
-- React + Vite
-- React Router
-- Axios
-- Recharts
-- React Calendar
-- React Hot Toast
+## What is FlexiPulse?
 
-## Repository Layout
+FlexiPulse is an AI-first gym operations and member wellness platform. It brings member metrics, appointment booking, trainer workflows, and personalized nutrition into one unified dashboard.
 
-- backend: Spring Boot API and business logic
-- frontend: React application
-- README.md: Project guide
+Whether you are tracking your health goals or managing members as a trainer, FlexiPulse gives you a real-time command center with actionable insights and AI support.
 
-## Core Features
+## Why FlexiPulse?
 
-1. Authentication and authorization
-- User registration and login
-- JWT token issuance on login
-- Role-based access control for Trainer-only routes
+| Problem | FlexiPulse Solution |
+| --- | --- |
+| Health tracking is scattered across apps | Centralized dashboard for BMI, progress, and recommendations |
+| Booking sessions causes scheduling conflicts | Appointment engine with trainer leave-block conflict prevention |
+| Nutrition planning is slow and generic | AI-generated diet plans personalized to goals and constraints |
+| Trainers manage members manually | Built-in member management and leave block workflows |
 
-2. Health dashboard
-- Save user height and weight
-- Automatic BMI and workout category
-- Weight trend chart
+## Features
 
-3. Appointments
-- Book trainer appointments
-- View all appointments
-- Prevent booking on trainer leave blocks
+- JWT auth with role-aware access (MEMBER and TRAINER)
+- Health metrics tracking with BMI/workout category calculation
+- Real-time trend visualization for member progress
+- Appointment booking with trainer availability protection
+- Trainer leave block management and member roster controls
+- Gemini-powered diet plan generation with fallback behavior
+- Diet plan history retrieval and in-app PDF export flow
+- Modern responsive UI with dashboard, cards, charts, and guided actions
 
-4. Trainer management
-- Trainer can add and remove members
-- Trainer can create and remove leave blocks
+## Quickstart
 
-5. AI nutrition
-- Generate personalized diet plans from user metrics and preferences
-- Graceful fallback response when Gemini is unavailable
-- View recent generated plans
-- Export generated plan to PDF from the frontend
+### Prerequisites
 
-## Environment Variables
+- Node.js 18+
+- Java 17+
+- Maven (or use Maven Wrapper)
+- Gemini API key (optional but required for live AI responses)
 
-Set these before running backend:
+### 1. Clone and install
 
-- GEMINI_API_KEY: Gemini API key for AI diet generation
-- JWT_SECRET: JWT signing secret (optional in dev, recommended in production)
+```bash
+git clone https://github.com/Praneetatmuri/Flexipulse.git
+cd flexipulse
+cd frontend && npm install
+```
+
+### 2. Configure environment variables
 
 PowerShell example:
 
@@ -72,90 +63,117 @@ $env:GEMINI_API_KEY="your_actual_key_here"
 $env:JWT_SECRET="your_strong_secret_here"
 ```
 
-## Local Development
-
-### 1) Start backend
+### 3. Run backend
 
 ```powershell
 cd backend
 .\mvnw.cmd spring-boot:run
 ```
 
-Backend default URL:
-- http://localhost:8080
+Backend URL: http://localhost:8080
 
-H2 console:
-- http://localhost:8080/h2-console
-- JDBC URL: jdbc:h2:mem:flexipulsedb
-- Username: sa
-- Password: (empty)
-
-### 2) Start frontend
+### 4. Run frontend
 
 ```powershell
 cd frontend
-npm install
 npm run dev
 ```
 
-Frontend default URL:
-- http://localhost:5173
+Frontend URL: http://localhost:5173
 
-## API Base URL
+## Configuration
 
-Frontend currently calls:
-- http://localhost:8080
+### Environment variables
 
-Configured in:
-- frontend/src/services/apiService.js
+| Variable | Required | Purpose |
+| --- | --- | --- |
+| GEMINI_API_KEY | For AI features | Enables live Gemini diet generation |
+| JWT_SECRET | Recommended | JWT signing key for authentication |
 
-## Authentication Flow
+### Current runtime defaults
 
-1. Register or login via /users endpoints
-2. Backend returns JWT token on successful login
-3. Frontend stores token in localStorage
-4. Axios interceptor adds Authorization: Bearer <token>
+- Backend port: `8080`
+- Frontend API base URL: `http://localhost:8080`
+- DB: H2 in-memory (`jdbc:h2:mem:flexipulsedb`)
 
-## API Endpoints (Current)
+## Architecture
+
+```
+React App (Vite)
+	-> Axios API Client (JWT interceptor)
+		-> Spring Boot REST API
+			-> Service Layer (Health, Appointments, Nutrition, Trainer Flows)
+				-> JPA Repositories
+					-> H2 In-Memory DB
+			-> Gemini API (diet generation)
+```
+
+### Security model
+
+- Public routes: `/users/register`, `/users/login`
+- Protected routes: all others require valid JWT
+- Trainer-only routes: `/users/trainer/**`, `/trainer/**`
+
+## Project Structure
+
+```
+flexipulse/
+├── backend/
+│   ├── src/main/java/com/example/demo/
+│   │   ├── config/
+│   │   ├── controller/
+│   │   ├── entity/
+│   │   ├── repository/
+│   │   ├── security/
+│   │   └── service/
+│   └── src/main/resources/application.properties
+├── frontend/
+│   ├── src/components/
+│   ├── src/pages/
+│   ├── src/services/
+│   ├── src/App.jsx
+│   └── src/App.css
+└── README.md
+```
+
+## API Reference
 
 ### Users
-- POST /users/register
-- POST /users/login
-- GET /users/all
-- POST /users/trainer/add-member (TRAINER)
-- DELETE /users/trainer/remove-member/{memberId} (TRAINER)
-- DELETE /users/{id}
+
+- `POST /users/register`
+- `POST /users/login`
+- `GET /users/all`
+- `POST /users/trainer/add-member` (TRAINER)
+- `DELETE /users/trainer/remove-member/{memberId}` (TRAINER)
+- `DELETE /users/{id}`
 
 ### Health
-- POST /health/save
-- POST /health/calculate
-- GET /health/all
-- GET /health/user/{userId}
+
+- `POST /health/save`
+- `POST /health/calculate`
+- `GET /health/all`
+- `GET /health/user/{userId}`
 
 ### Appointments
-- POST /appointments/book
-- GET /appointments/all
+
+- `POST /appointments/book`
+- `GET /appointments/all`
 
 ### Trainer Leave Blocks
-- POST /trainer/leave-blocks (TRAINER)
-- DELETE /trainer/leave-blocks/{id} (TRAINER)
-- GET /trainer/leave-blocks (TRAINER)
-- GET /trainer/leave-blocks/all
+
+- `POST /trainer/leave-blocks` (TRAINER)
+- `DELETE /trainer/leave-blocks/{id}` (TRAINER)
+- `GET /trainer/leave-blocks` (TRAINER)
+- `GET /trainer/leave-blocks/all`
 
 ### Nutrition
-- POST /nutrition/diet-plan
-- POST /nutrition/meal-suggestions
-- GET /nutrition/api-status
-- GET /nutrition/diet-plan/history/{userId}
 
-## Security Notes
+- `POST /nutrition/diet-plan`
+- `POST /nutrition/meal-suggestions`
+- `GET /nutrition/api-status`
+- `GET /nutrition/diet-plan/history/{userId}`
 
-- /users/register and /users/login are public
-- Most other endpoints require JWT authentication
-- Trainer endpoints are protected by role checks
-- Gemini API key is loaded from environment variable, not hardcoded in application properties
-
-## Build Commands
+## Build and Test
 
 ### Frontend
 
@@ -173,24 +191,35 @@ cd backend
 
 ## Troubleshooting
 
-1. Port already in use
-- Change backend port in backend/src/main/resources/application.properties
+### Backend fails to start on 8080
 
-2. AI plan not generating
-- Verify GEMINI_API_KEY is set in the same terminal session where backend is started
-- Check /nutrition/api-status
+- Change `server.port` in `backend/src/main/resources/application.properties`
 
-3. Unauthorized errors after backend restart
-- Login again to refresh JWT token in frontend
+### AI plan not generating
 
-## Production Readiness Checklist
+- Ensure `GEMINI_API_KEY` is set in the same terminal session as backend startup
+- Verify API readiness at `GET /nutrition/api-status`
 
-- Replace H2 with a persistent database
-- Set a strong JWT_SECRET
-- Use environment-based config per environment
-- Add centralized logging/monitoring
-- Add CI pipeline for build and test
+### 401/403 after server restart
+
+- Re-login in frontend to refresh JWT token in local storage
+
+## Roadmap Ideas
+
+- Persistent database (PostgreSQL/MySQL)
+- Observability (logs, traces, metrics)
+- CI for lint/build/test gates
+- Production-ready secrets and environment profiles
+
+## Contributing
+
+Contributions are welcome.
+
+1. Fork the repository
+2. Create a branch (`feature/your-feature`)
+3. Commit your changes
+4. Push and open a pull request
 
 ## License
 
-This repository currently has no explicit license file.
+No explicit license file is currently present in this repository.
