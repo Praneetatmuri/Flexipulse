@@ -1,0 +1,53 @@
+services:
+  # ─── BACKEND WEB SERVICE ──────────────────────────────────────────
+  - type: web
+    name: flexipulse-backend
+    env: docker
+    rootDir: backend
+    plan: free # Uses the free tier (change to 'starter' if you want a paid plan)
+    
+    # Environment Variables for Backend
+    # Render will prompt you for the `sync: false` variables when you create the blueprint
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      # The URL of the frontend (for CORS). We will copy the generated frontend URL here in Render Dashboard later.
+      - key: FRONTEND_URL
+        sync: false
+      
+      # Database variables (from Aiven MySQL)
+      - key: DB_HOST
+        sync: false
+      - key: DB_PORT
+        sync: false
+      - key: DB_NAME
+        sync: false
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      
+      # Automatically generate a secure 64-character token securely in Render
+      - key: JWT_SECRET
+        generateValue: true
+      
+      # Gemini AI key
+      - key: GEMINI_API_KEY
+        sync: false
+
+  # ─── FRONTEND STATIC SITE ─────────────────────────────────────────
+  - type: web
+    name: flexipulse-frontend
+    env: static
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    
+    # Environment Variables for Frontend Build Output
+    envVars:
+      # Inject the Backend URL dynamically into the React code during the build process
+      - key: VITE_API_URL
+        fromService:
+          type: web
+          name: flexipulse-backend
+          property: url
