@@ -1,0 +1,16 @@
+# Build stage
+FROM maven:3.8.5-openjdk-17 AS build
+WORKDIR /app
+COPY . .
+RUN mvn clean package -DskipTests
+
+# Run stage
+FROM eclipse-temurin:17-jre-alpine
+WORKDIR /app
+COPY --from=build /app/target/backend-0.0.1-SNAPSHOT.jar app.jar
+
+# Set the active profile to prod
+ENV SPRING_PROFILES_ACTIVE=prod
+
+EXPOSE 8080
+ENTRYPOINT ["java", "-Xmx256m", "-Xss512k", "-jar", "app.jar"]
