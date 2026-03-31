@@ -45,9 +45,5 @@ services:
     
     # Environment Variables for Frontend Build Output
     envVars:
-      # Inject the Backend URL dynamically into the React code during the build process
       - key: VITE_API_URL
-        fromService:
-          type: web
-          name: flexipulse-backend
-          property: url
+        sync: false
